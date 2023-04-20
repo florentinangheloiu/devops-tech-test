@@ -24,6 +24,18 @@ def update_version(conn, version):
     mycursor.execute(f"UPDATE versionTable SET version = {version}")
     conn.commit()
 
+def execute_update_scripts(conn, scripts):
+    for script in scripts:
+        version = int(re.match(r'^(\d+)', script).group(1))
+        if version > current_version:
+            with open(os.path.join(directory, script), 'r') as f:
+                sql_script = f.read()
+                mycursor = conn.cursor()
+                mycursor.execute(sql_script)
+                print(f"Executed script {script}")
+            update_version(conn, version)
+            print(f"Updated database version to {version}")
+
 if __name__ == '__main__':
     if len(sys.argv) != 6:
         print("The following parameters are needed to run the script: directory-with-sql-scripts username-for-the-db db-host db-name db-password")
@@ -47,3 +59,11 @@ if __name__ == '__main__':
 
     current_version = get_current_version(conn)
     print(f"Current database version is {current_version}")
+
+    target_version = int(re.match(r'^(\d+)', all_scripts[-1]).group(1))
+    print(f"Target database version is {target_version}")
+
+    if current_version <= target_version:
+        execute_update_scripts(conn,all_scripts)
+
+    conn.close()
