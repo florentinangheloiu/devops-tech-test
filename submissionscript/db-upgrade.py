@@ -19,6 +19,11 @@ def get_current_version(conn):
     myresult = [i[0] for i in mycursor.fetchall()]
     return int(myresult[0])
 
+def update_version(conn, version):
+    mycursor = conn.cursor()
+    mycursor.execute(f"UPDATE versionTable SET version = {version}")
+    conn.commit()
+
 if __name__ == '__main__':
     if len(sys.argv) != 6:
         print("The following parameters are needed to run the script: directory-with-sql-scripts username-for-the-db db-host db-name db-password")
